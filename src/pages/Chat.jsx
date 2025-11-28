@@ -2,19 +2,18 @@ import React, { useEffect, useState } from "react";
 import MessageBox from "../components/MessageBox";
 import PrevButton from "../components/PrevButton";
 import { MoonLoader } from "react-spinners";
-import { data } from "autoprefixer";
 
 const Chat = ({ ingredientList }) => {
   // logic
-
   const endpoint = process.env.REACT_APP_SERVER_ADDRESS;
 
   const [value, setValue] = useState("");
 
   // TODO: set함수 추가하기
-  const [messages] = useState([]); // chatGPT와 사용자의 대화 메시지 배열
-  const [isInfoLoading] = useState(false); // 최초 정보 요청시 로딩
-  const [isMessageLoading] = useState(true); // 사용자와 메시지 주고 받을때 로딩
+  const [messages, setMessages] = useState([]); // chatGPT와 사용자의 대화 메시지 배열
+  const [isInfoLoading, setIsfoLoading] = useState(true); // 최초 정보 요청시 로딩
+  const [isMessageLoading, setMessages] = useState(true); // 사용자와 메시지 주고 받을때 로딩
+  const [setInfoMessages, removeLastDataList]
   const hadleChange = (event) => {
     const { value } = event.target;
     console.log("value==>", value);
@@ -27,23 +26,39 @@ const Chat = ({ ingredientList }) => {
   };
 
   const sendInfo = async () => {
-    console.log("🚀 ~ sendInfo ~ endpoint:", endpoint);
+    setIsfoLoading(true);
     try {
       // API 호출
       const response = await fetch(`${endpoint}/recipe`, {
         method: "POST",
-        headers: { "Content-type": "application/json" },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ingredientList }),
       });
 
+      //JSON형식 ->자바스크리트 객개체로 변환
       const result = await response.json();
       console.log("🚀 ~ sendInfo ~ result:", result);
 
       if (!result.data) return;
       //UI 작업
+      // 데이터가 제대로 들어온경우
+      const removeLastDataList = result.data.filter(
+        (_, index, array) => array.length - 1 !== index
+      );
+
+      // 초기 기본답변 저장
+      setInfoMessages(removeLastDataList);
+
+      // 첫 assistant답변 UI에 추가
+      const { role, content } = result.data[result.data.length - 1];
+
+      // prev: 배열
+      setMessages((prev) => [...prev, { role, content }]);
     } catch (error) {
       //에러처리
       console.error(error);
+    } finally {
+      isIsInforLoading(false);
     }
   };
 
