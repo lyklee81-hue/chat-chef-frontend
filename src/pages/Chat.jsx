@@ -2,17 +2,14 @@ import React, { useEffect, useState } from "react";
 import MessageBox from "../components/MessageBox";
 import PrevButton from "../components/PrevButton";
 import { MoonLoader } from "react-spinners";
+import { data } from "autoprefixer";
 
 const Chat = ({ ingredientList }) => {
   // logic
 
-  const [value, setValue] = useState("");
+  const endpoint = process.env.REACT_APP_SERVER_ADDRESS;
 
-  //페이지 진입시 딱 한번 실행
-  useEffect(() => {
-    console.log("ingredientList", ingredientList);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const [value, setValue] = useState("");
 
   // TODO: set함수 추가하기
   const [messages] = useState([]); // chatGPT와 사용자의 대화 메시지 배열
@@ -28,6 +25,34 @@ const Chat = ({ ingredientList }) => {
     event.preventDefault();
     console.log("메시지 보내기");
   };
+
+  const sendInfo = async () => {
+    console.log("🚀 ~ sendInfo ~ endpoint:", endpoint);
+    try {
+      // API 호출
+      const response = await fetch(`${endpoint}/recipe`, {
+        method: "POST",
+        headers: { "Content-type": "application/json" },
+        body: JSON.stringify({ ingredientList }),
+      });
+
+      const result = await response.json();
+      console.log("🚀 ~ sendInfo ~ result:", result);
+
+      if (!result.data) return;
+      //UI 작업
+    } catch (error) {
+      //에러처리
+      console.error(error);
+    }
+  };
+
+  //페이지 진입시 딱 한번 실행
+  useEffect(() => {
+    console.log("ingredientList", ingredientList);
+    sendInfo();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // view
   return (
